@@ -1,5 +1,0 @@
-{
-    "board": "arduino:samd:mkrgsm1400",
-    "port": "COM8",
-    "sketch": "GSMClient_SG_M1.ino"
-}
