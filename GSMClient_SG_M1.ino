@@ -49,6 +49,8 @@ unsigned long epoch = 0;
 const byte timeZone = 8; // Setting for GMT offset in hours
 const unsigned short SECS_PER_HOUR = 3600;
 unsigned long localSgTime = 0;
+unsigned long lastSyncTime = 0;
+unsigned long currentEpoch = 0;
 
 
 void setup()
@@ -91,11 +93,20 @@ void setup()
   //Serial.println(epoch);
   
   //localSgTime = epoch + (timeZone * SECS_PER_HOUR);
+  SeeedOled.clearDisplay();
+  SeeedOled.setTextXY(0,0);
+  SeeedOled.putString("GSM Local Time");
+  delay(2000);
+  localSgTime = gsmAccess.getLocalTime(); // MKRGSM version 1.3 and above
 
-  localSgTime = gsmAccess.getLocalTime();
-
+  //RTC Setup
+  SeeedOled.clearDisplay();
+  SeeedOled.setTextXY(0,0);
+  SeeedOled.putString("Setting RTC");
+  delay(2000);
   rtc.begin(); // initialize RTC
   rtc.setEpoch(localSgTime); // Setting epoch to SG Time
+  lastSyncTime = rtc.getEpoch();
 }
 
 void loop()
@@ -117,10 +128,45 @@ void loop()
 
   Serial.println();
 
+  SeeedOled.clearDisplay();
+  SeeedOled.setTextXY(0,0);
+  //Display Hour in Time. Set leading zero if less than 10
+  if (rtc.getHours() < 10){
+    SeeedOled.putNumber(0);
+    SeeedOled.setTextXY(0,1);
+    SeeedOled.putNumber(rtc.getHours());
+  }
+  else{
+    SeeedOled.putNumber(rtc.getHours());
+  }
+  SeeedOled.setTextXY(0,2);
+  SeeedOled.putString(":");
+  SeeedOled.setTextXY(0,3);
+  //Display Minute in Time. Set leading zero if less than 10
+  if (rtc.getMinutes() < 10){
+    SeeedOled.putNumber(0);
+    SeeedOled.setTextXY(0,4);
+    SeeedOled.putNumber(rtc.getMinutes());
+  }
+  else{
+    SeeedOled.putNumber(rtc.getMinutes());
+  }
 
-  SeeedOled.putString("Hello World!"); //Print the String
-  // wait ten seconds before asking for the time again
-  delay(30000);
+
+   //Print the String
+  // wait one minute before updating the time again
+  delay(60000);
+
+  currentEpoch = rtc.getEpoch();
+  //Check if 24 hours past since last GSM Time Sync
+  if ((currentEpoch - lastSyncTime) > 86400){
+    SeeedOled.setTextXY(1,0);
+    SeeedOled.putString("Correct: ");
+    SeeedOled.setTextXY(1,9);
+    SyncGsm2RTC();
+    SeeedOled.putNumber(currentEpoch - lastSyncTime);
+  }
+
 }
 
 
@@ -129,4 +175,10 @@ void print2digits(int number) {
     Serial.print("0");
   }
   Serial.print(number);
+}
+
+void SyncGsm2RTC(){
+  localSgTime = gsmAccess.getLocalTime();
+  rtc.setEpoch(localSgTime); // Setting epoch to SG Time
+  lastSyncTime = rtc.getEpoch();
 }
