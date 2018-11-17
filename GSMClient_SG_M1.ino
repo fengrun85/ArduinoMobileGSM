@@ -86,11 +86,13 @@ void setup()
 
   Serial.println("\nStarting connection to server...");
 
-  epoch = gsmAccess.getTime();
-  Serial.print("GSM Epoch : ");
-  Serial.println(epoch);
+  //epoch = gsmAccess.getTime();
+  //Serial.print("GSM Epoch : ");
+  //Serial.println(epoch);
   
-  localSgTime = epoch + (timeZone * SECS_PER_HOUR);
+  //localSgTime = epoch + (timeZone * SECS_PER_HOUR);
+
+  localSgTime = gsmAccess.getLocalTime();
 
   rtc.begin(); // initialize RTC
   rtc.setEpoch(localSgTime); // Setting epoch to SG Time
