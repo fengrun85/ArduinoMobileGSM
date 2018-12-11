@@ -8,6 +8,7 @@
 #include <SeeedOLED.h>
 #include <RTCZero.h>
 #include <NMEAGPS.h>
+#include <ThingerMKRGSM.h>
 
 #include "arduino_secrets.h"
 // Please enter your sensitive data in the Secret tab or arduino_secrets.h
@@ -39,11 +40,23 @@ unsigned long currentEpoch = 0;
 unsigned short lastMinute = 0;
 
 //GPS
-static NMEAGPS  gps; // This parses the GPS characters
-static gps_fix  fix; // This holds on to the latest values
+NMEAGPS  gps; // This parses the GPS characters
+gps_fix  fix; // This holds on to the latest values
 #define DEBUG_PORT Serial
 #define gpsPort Serial1
 #define GPS_PORT_NAME "Serial1"
+
+//Thinger
+
+#define THINGER_SERVER "3.16.161.205"
+#define _DEBUG_
+#define _DISABLE_TLS_
+
+#define USERNAME "fengrun"
+#define DEVICE_ID "mkr1400_1"
+#define DEVICE_CREDENTIAL "VmY50XY6AYcU"
+
+ThingerMKRGSM thing(USERNAME, DEVICE_ID, DEVICE_CREDENTIAL);
 
 void setup()
 {
