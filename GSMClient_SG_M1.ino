@@ -1,21 +1,5 @@
 /*
 
-  Udp NTP Client
-
-  Get the time from a Network Time Protocol (NTP) time server
-  Demonstrates use of UDP sendPacket and ReceivePacket
-  For more on NTP time servers and the messages needed to communicate with them,
-  see http://en.wikipedia.org/wiki/Network_Time_Protocol
-
-  created 4 Sep 2010
-  by Michael Margolis
-  modified 9 Apr 2012
-  by Tom Igoe
-
-  modified 6 Dec 2017 ported from WiFi101 to MKRGSM
-  by Arturo Guadalupi
- 
-  This code is in the public domain.
 
 */
 
@@ -23,6 +7,7 @@
 #include <Wire.h>
 #include <SeeedOLED.h>
 #include <RTCZero.h>
+#include <NMEAGPS.h>
 
 #include "arduino_secrets.h"
 // Please enter your sensitive data in the Secret tab or arduino_secrets.h
@@ -52,6 +37,12 @@ unsigned long localSgTime = 0;
 unsigned long lastSyncTime = 0;
 unsigned long currentEpoch = 0;
 
+//GPS
+static NMEAGPS  gps; // This parses the GPS characters
+static gps_fix  fix; // This holds on to the latest values
+#define DEBUG_PORT Serial
+#define gpsPort Serial1
+#define GPS_PORT_NAME "Serial1"
 
 void setup()
 {
@@ -60,6 +51,9 @@ void setup()
   /* while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   } */
+
+  //GPS
+  gpsPort.begin(9600);
 
   Wire.begin();
   SeeedOled.init();  //initialze SEEED OLED display
@@ -107,12 +101,41 @@ void setup()
   rtc.begin(); // initialize RTC
   rtc.setEpoch(localSgTime); // Setting epoch to SG Time
   lastSyncTime = rtc.getEpoch();
+
+  
+
 }
 
 void loop()
 {
+  
+  //GPS Fix
+  while (gps.available( gpsPort )) {
+    fix = gps.read();
+
+    DEBUG_PORT.print( F("Location: ") );
+    if (fix.valid.location) {
+      DEBUG_PORT.print( fix.latitude(), 6 );
+      DEBUG_PORT.print( ',' );
+      DEBUG_PORT.print( fix.longitude(), 6 );
+      SeeedOled.setTextXY(2,0);
+      SeeedOled.putFloat(fix.latitude(),6);
+      SeeedOled.putChar(',');
+      SeeedOled.setTextXY(3,0);
+      SeeedOled.putFloat(fix.longitude(),6);
+
+    }
+
+    DEBUG_PORT.print( F(", Altitude: ") );
+    if (fix.valid.altitude)
+      DEBUG_PORT.print( fix.altitude() );
+
+    DEBUG_PORT.println();
+
+  }
+
  
-  Serial.print(rtc.getDay());
+  /*Serial.print(rtc.getDay());
   Serial.print("/");
   Serial.print(rtc.getMonth());
   Serial.print("/");
@@ -126,9 +149,9 @@ void loop()
   Serial.print(":");
   print2digits(rtc.getSeconds());
 
-  Serial.println();
+  Serial.println(); */
 
-  SeeedOled.clearDisplay();
+  /*SeeedOled.clearDisplay(); //Comment out because it will clear debug msgs on OLED
   SeeedOled.setTextXY(0,0);
   //Display Hour in Time. Set leading zero if less than 10
   if (rtc.getHours() < 10){
@@ -151,11 +174,10 @@ void loop()
   else{
     SeeedOled.putNumber(rtc.getMinutes());
   }
+    //Print the String
 
-
-   //Print the String
   // wait one minute before updating the time again
-  delay(60000);
+  //delay(1000); */
 
   currentEpoch = rtc.getEpoch();
   //Check if 24 hours past since last GSM Time Sync
