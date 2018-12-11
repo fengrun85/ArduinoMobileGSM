@@ -36,6 +36,7 @@ const unsigned short SECS_PER_HOUR = 3600;
 unsigned long localSgTime = 0;
 unsigned long lastSyncTime = 0;
 unsigned long currentEpoch = 0;
+unsigned short lastMinute = 0;
 
 //GPS
 static NMEAGPS  gps; // This parses the GPS characters
@@ -150,34 +151,39 @@ void loop()
   print2digits(rtc.getSeconds());
 
   Serial.println(); */
-
-  /*SeeedOled.clearDisplay(); //Comment out because it will clear debug msgs on OLED
-  SeeedOled.setTextXY(0,0);
-  //Display Hour in Time. Set leading zero if less than 10
-  if (rtc.getHours() < 10){
-    SeeedOled.putNumber(0);
-    SeeedOled.setTextXY(0,1);
-    SeeedOled.putNumber(rtc.getHours());
-  }
-  else{
-    SeeedOled.putNumber(rtc.getHours());
-  }
-  SeeedOled.setTextXY(0,2);
-  SeeedOled.putString(":");
-  SeeedOled.setTextXY(0,3);
-  //Display Minute in Time. Set leading zero if less than 10
-  if (rtc.getMinutes() < 10){
-    SeeedOled.putNumber(0);
-    SeeedOled.setTextXY(0,4);
-    SeeedOled.putNumber(rtc.getMinutes());
-  }
-  else{
-    SeeedOled.putNumber(rtc.getMinutes());
-  }
+  if (lastMinute != rtc.getMinutes())
+  {
+    SeeedOled.clearDisplay(); //Comment out because it will clear debug msgs on OLED
+    SeeedOled.setTextXY(0, 0);
+    //Display Hour in Time. Set leading zero if less than 10
+    if (rtc.getHours() < 10)
+    {
+      SeeedOled.putNumber(0);
+      SeeedOled.setTextXY(0, 1);
+      SeeedOled.putNumber(rtc.getHours());
+    }
+    else
+    {
+      SeeedOled.putNumber(rtc.getHours());
+    }
+    SeeedOled.setTextXY(0, 2);
+    SeeedOled.putString(":");
+    SeeedOled.setTextXY(0, 3);
+    //Display Minute in Time. Set leading zero if less than 10
+    if (rtc.getMinutes() < 10)
+    {
+      SeeedOled.putNumber(0);
+      SeeedOled.setTextXY(0, 4);
+      SeeedOled.putNumber(rtc.getMinutes());
+    }
+    else
+    {
+      SeeedOled.putNumber(rtc.getMinutes());
+    }
     //Print the String
-
-  // wait one minute before updating the time again
-  //delay(1000); */
+    lastMinute = rtc.getMinutes();
+    // wait one minute before updating the time again
+  }
 
   currentEpoch = rtc.getEpoch();
   //Check if 24 hours past since last GSM Time Sync
